@@ -1,0 +1,10 @@
+## Interface: 120000
+## Title: DawnCrystalTracker
+## Notes: Lightweight tracker that shows whether you currently have the Dawn Crystal (L'ura encounter helper).
+## Author: You
+## Version: 1.0.0
+## SavedVariables: DawnCrystalTrackerDB
+## X-Category: Encounter
+## X-License: All Rights Reserved
+
+DawnCrystalTracker.lua
