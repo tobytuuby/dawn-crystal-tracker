@@ -16,10 +16,26 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Build zip (foldered addon)
+        id: build
         shell: bash
         run: |
           set -euo pipefail
           ADDON="DawnCrystalTracker"
+
+          # Prefer the release tag name when available; otherwise use the ref name.
+          TAG="${{ github.event.release.tag_name }}"
+          if [[ -z "${TAG}" ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          fi
+
+          # Name format requested: dct-v<whatever>.zip
+          # If your tag already starts with 'v', avoid double 'v'.
+          NORM_TAG="${TAG}"
+          if [[ "${NORM_TAG}" != v* ]]; then
+            NORM_TAG="v${NORM_TAG}"
+          fi
+          ZIP_NAME="dct-${NORM_TAG}.zip"
+          echo "zip_name=${ZIP_NAME}" >> "${GITHUB_OUTPUT}"
 
           rm -rf dist
           mkdir -p "dist/$ADDON"
@@ -33,10 +49,10 @@ jobs:
             ./ "dist/$ADDON/"
 
           cd dist
-          zip -r "../${ADDON}.zip" "$ADDON"
+          zip -r "../${ZIP_NAME}" "$ADDON"
 
       - name: Upload zip to Release
         if: github.event_name == 'release'
         uses: softprops/action-gh-release@v2
         with:
-          files: DawnCrystalTracker.zip
+          files: ${{ steps.build.outputs.zip_name }}
