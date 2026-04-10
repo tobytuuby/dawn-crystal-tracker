@@ -1,0 +1,42 @@
+name: Build Addon Zip
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+jobs:
+  zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build zip (foldered addon)
+        shell: bash
+        run: |
+          set -euo pipefail
+          ADDON="DawnCrystalTracker"
+
+          rm -rf dist
+          mkdir -p "dist/$ADDON"
+
+          # Copy repo contents into a top-level addon folder inside the zip.
+          # Exclude CI/config and build output.
+          rsync -a \
+            --exclude='.git' \
+            --exclude='.github' \
+            --exclude='dist' \
+            ./ "dist/$ADDON/"
+
+          cd dist
+          zip -r "../${ADDON}.zip" "$ADDON"
+
+      - name: Upload zip to Release
+        if: github.event_name == 'release'
+        uses: softprops/action-gh-release@v2
+        with:
+          files: DawnCrystalTracker.zip
